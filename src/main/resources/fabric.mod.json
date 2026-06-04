@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "notetask",
+  "version": "${version}",
+  "name": "NoteTask",
+  "description": "In-game notes and item tasks with a side-panel HUD — see progress without opening the menu.",
+  "authors": ["YourName"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "main":   ["com.notetask.NoteTaskMod"],
+    "client": ["com.notetask.NoteTaskClient"],
+    "modmenu": ["com.notetask.integration.ModMenuIntegration"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "minecraft":    "~1.21.11",
+    "java":         ">=21",
+    "fabric-api":   "*"
+  },
+  "suggests": {
+    "modmenu": "*",
+    "jei": "*"
+  }
+}
