@@ -1,5 +1,6 @@
 package com.notetask.gui;
 
+import com.notetask.KeyBindings;
 import com.notetask.data.SaveData;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.DrawContext;
@@ -26,48 +27,8 @@ public class WelcomeScreen extends Screen {
 
     private record Page(String title, String body) {}
 
-    private static final Page[] PAGES = {
-            new Page(
-                    "Hey there, adventurer!  ✦",
-                    "I'm Notey, your in-game task companion.\n\n" +
-                            "NoteTask lets you track what you need to collect, build, or do — " +
-                            "right inside Minecraft. No more alt-tabbing to check a list!\n\n" +
-                            "Let me walk you through the basics real quick."
-            ),
-            new Page(
-                    "Item Tasks  ✦",
-                    "The heart of NoteTask is the Item Task.\n\n" +
-                            "Set a goal like 'collect 64 oak logs' — type the item ID or click " +
-                            "Browse to pick it from a searchable list. " +
-                            "NoteTask counts what's in your inventory and your chests automatically.\n\n" +
-                            "Hit your goal and the task marks itself done. ✔"
-            ),
-            new Page(
-                    "Manual Tasks & Priority  ✦",
-                    "Not everything is about items! Manual Tasks are simple to-dos " +
-                            "you check off yourself — things like 'Build the nether portal' " +
-                            "or 'Find a village'.\n\n" +
-                            "Every task also has a Priority: ▼ Low, ● Normal, or ▲ High. " +
-                            "High-priority tasks get a red stripe on the left so they always catch your eye."
-            ),
-            new Page(
-                    "Subtasks & Notes  ✦",
-                    "Big goals can be broken into Subtasks — smaller steps you tick off as you go. " +
-                            "Add them right in the task editor.\n\n" +
-                            "The Notes tab is your free-form scratchpad. " +
-                            "Coordinates, build plans, shopping lists — anything you like. " +
-                            "Notes are pinnable and searchable too."
-            ),
-            new Page(
-                    "You're all set!  ✦",
-                    "Your active tasks appear on the HUD while you play, " +
-                            "so you never lose track mid-adventure.\n\n" +
-                            "Press your keybind anytime to open this menu. " +
-                            "There's also a Quick Add keybind so you can jot down a new task " +
-                            "on the fly without opening the full screen.\n\n" +
-                            "Good luck out there — I'll be keeping score! ✦"
-            )
-    };
+    /** Built in the constructor so the last page can embed the live keybind name. */
+    private final Page[] PAGES;
 
     // ── State ─────────────────────────────────────────────────────────────
 
@@ -113,6 +74,53 @@ public class WelcomeScreen extends Screen {
     public WelcomeScreen(Screen next) {
         super(Text.literal("Welcome to NoteTask"));
         this.next = next;
+
+        // Read the actual bound keys so the last page is always accurate
+        String openKey     = KeyBindings.openNoteTaskKey.getBoundKeyLocalizedText().getString();
+        String quickAddKey = KeyBindings.quickAddTaskKey.getBoundKeyLocalizedText().getString();
+
+        PAGES = new Page[] {
+                new Page(
+                        "Hey there, adventurer!  ✦",
+                        "I'm Notey, your in-game task companion.\n\n" +
+                                "NoteTask lets you track what you need to collect, build, or do — " +
+                                "right inside Minecraft. No more alt-tabbing to check a list!\n\n" +
+                                "Let me walk you through the basics real quick."
+                ),
+                new Page(
+                        "Item Tasks  ✦",
+                        "The heart of NoteTask is the Item Task.\n\n" +
+                                "Set a goal like 'collect 64 oak logs' — type the item ID or click " +
+                                "Browse to pick it from a searchable list. " +
+                                "NoteTask counts what's in your inventory and your chests automatically.\n\n" +
+                                "Hit your goal and the task marks itself done. ✔"
+                ),
+                new Page(
+                        "Manual Tasks & Priority  ✦",
+                        "Not everything is about items! Manual Tasks are simple to-dos " +
+                                "you check off yourself — things like 'Build the nether portal' " +
+                                "or 'Find a village'.\n\n" +
+                                "Every task also has a Priority: ▼ Low, ● Normal, or ▲ High. " +
+                                "High-priority tasks get a red stripe on the left so they always catch your eye."
+                ),
+                new Page(
+                        "Subtasks & Notes  ✦",
+                        "Big goals can be broken into Subtasks — smaller steps you tick off as you go. " +
+                                "Add them right in the task editor.\n\n" +
+                                "The Notes tab is your free-form scratchpad. " +
+                                "Coordinates, build plans, shopping lists — anything you like. " +
+                                "Notes are pinnable and searchable too."
+                ),
+                new Page(
+                        "You're all set!  ✦",
+                        "Your active tasks appear on the HUD while you play, " +
+                                "so you never lose track mid-adventure.\n\n" +
+                                "Press [" + openKey + "] anytime to open this menu. " +
+                                "Press [" + quickAddKey + "] to create a task on the fly " +
+                                "without opening the full screen.\n\n" +
+                                "Good luck out there — I'll be keeping score! ✦"
+                )
+        };
     }
 
     private int pl() { return (this.width  - PW) / 2; }
