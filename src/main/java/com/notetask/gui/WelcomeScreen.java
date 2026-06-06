@@ -1,7 +1,6 @@
 package com.notetask.gui;
 
 import com.notetask.KeyBindings;
-import com.notetask.data.SaveData;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -42,20 +41,10 @@ public class WelcomeScreen extends Screen {
 
     /**
      * Returns {@code true} when the welcome screen should be shown.
-     * <p>Skipped automatically if the user already has saved tasks or notes
-     * (meaning they're updating from an older version, not installing fresh).</p>
+     * The only gate is the marker file — delete it to see the screen again.
      */
     public static boolean shouldShow() {
-        if (Files.exists(MARKER)) return false;
-
-        // Existing data → experienced user updating the mod; skip gracefully
-        boolean hasData = !SaveData.getTasks().isEmpty()
-                || !SaveData.getNotes().isEmpty();
-        if (hasData) {
-            markSeen();   // write the marker so we never check again
-            return false;
-        }
-        return true;
+        return !Files.exists(MARKER);
     }
 
     private static void markSeen() {
@@ -76,49 +65,46 @@ public class WelcomeScreen extends Screen {
         this.next = next;
 
         // Read the actual bound keys so the last page is always accurate
-        String openKey     = KeyBindings.openNoteTaskKey.getBoundKeyLocalizedText().getString();
+        String openKey = KeyBindings.openNoteTaskKey.getBoundKeyLocalizedText().getString();
         String quickAddKey = KeyBindings.quickAddTaskKey.getBoundKeyLocalizedText().getString();
 
-        PAGES = new Page[] {
+        PAGES = new Page[]{
                 new Page(
                         "Hey there, adventurer!  ✦",
                         "I'm Notey, your in-game task companion.\n\n" +
-                                "NoteTask lets you track what you need to collect, build, or do — " +
-                                "right inside Minecraft. No more alt-tabbing to check a list!\n\n" +
-                                "Let me walk you through the basics real quick."
+                                "NoteTask keeps track of what you need to collect, build, or do — " +
+                                "right inside Minecraft. No more alt-tabbing to check a text file!\n\n" +
+                                "Let's get you up to speed real quick."
                 ),
                 new Page(
                         "Item Tasks  ✦",
-                        "The heart of NoteTask is the Item Task.\n\n" +
-                                "Set a goal like 'collect 64 oak logs' — type the item ID or click " +
-                                "Browse to pick it from a searchable list. " +
-                                "NoteTask counts what's in your inventory and your chests automatically.\n\n" +
-                                "Hit your goal and the task marks itself done. ✔"
+                        "Item Tasks are the core of the mod.\n\n" +
+                                "Set a goal like '64 Oak Logs' by typing the item ID or clicking " +
+                                "Browse to find it. NoteTask automatically counts what's in your " +
+                                "inventory and nearby chests.\n\n" +
+                                "Once you hit your goal, the task marks itself done. ✔"
                 ),
                 new Page(
                         "Manual Tasks & Priority  ✦",
-                        "Not everything is about items! Manual Tasks are simple to-dos " +
-                                "you check off yourself — things like 'Build the nether portal' " +
+                        "Not everything is an item. Manual Tasks are simple to-dos " +
+                                "you check off yourself — like 'Build the nether portal' " +
                                 "or 'Find a village'.\n\n" +
-                                "Every task also has a Priority: ▼ Low, ● Normal, or ▲ High. " +
-                                "High-priority tasks get a red stripe on the left so they always catch your eye."
+                                "You can also set priorities: ▼ Low, ● Normal, or ▲ High. " +
+                                "High-priority tasks get a red stripe on the left so they stand out."
                 ),
                 new Page(
                         "Subtasks & Notes  ✦",
-                        "Big goals can be broken into Subtasks — smaller steps you tick off as you go. " +
-                                "Add them right in the task editor.\n\n" +
-                                "The Notes tab is your free-form scratchpad. " +
-                                "Coordinates, build plans, shopping lists — anything you like. " +
-                                "Notes are pinnable and searchable too."
+                        "Big projects? Break them down into Subtasks inside the editor " +
+                                "and check them off as you go.\n\n" +
+                                "There's also a Notes tab for random thoughts. Use it for coordinates, " +
+                                "build plans, or shopping lists. You can pin and search through them later."
                 ),
                 new Page(
                         "You're all set!  ✦",
-                        "Your active tasks appear on the HUD while you play, " +
-                                "so you never lose track mid-adventure.\n\n" +
-                                "Press [" + openKey + "] anytime to open this menu. " +
-                                "Press [" + quickAddKey + "] to create a task on the fly " +
-                                "without opening the full screen.\n\n" +
-                                "Good luck out there — I'll be keeping score! ✦"
+                        "Your active tasks will show up right on your HUD while you play.\n\n" +
+                                "Press [" + openKey + "] to open this dashboard, or press [" + quickAddKey + "] " +
+                                "to quickly log a task on the fly without pausing.\n\n" +
+                                "Good luck out there!  ✦"
                 )
         };
     }
