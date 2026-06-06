@@ -3,6 +3,7 @@ package com.notetask;
 import com.notetask.config.ModConfig;
 import com.notetask.data.SaveData;
 import com.notetask.gui.NoteTaskScreen;
+import com.notetask.gui.WelcomeScreen;
 import com.notetask.hud.TaskHud;
 import com.notetask.tracking.InventoryTracker;
 import com.notetask.util.QuickTasks;
@@ -29,7 +30,10 @@ public class NoteTaskClient implements ClientModInitializer {
             if (client.player == null) return;
 
             if (KeyBindings.openNoteTaskKey.wasPressed()) {
-                client.setScreen(new NoteTaskScreen());
+                // Show the welcome guide on first install; open normally on all subsequent runs
+                client.setScreen(WelcomeScreen.shouldShow()
+                        ? new WelcomeScreen(new NoteTaskScreen())
+                        : new NoteTaskScreen());
             }
             if (KeyBindings.quickAddTaskKey.wasPressed()) {
                 QuickTasks.addFromHeldItem(client);
@@ -41,7 +45,6 @@ public class NoteTaskClient implements ClientModInitializer {
             }
 
             InventoryTracker.tick(client);
-            // Old RRV pick session tick loop has been removed here
         });
 
         // Register the HUD overlay

@@ -27,9 +27,7 @@ public class SaveData {
     public static List<Note> getNotes() { return notes; }
     public static List<Task> getTasks() { return tasks; }
 
-    public static Path saveFilePath() {
-        return SAVE_FILE;
-    }
+    public static Path saveFilePath() { return SAVE_FILE; }
 
     public static void load() {
         if (!Files.exists(SAVE_FILE)) return;
@@ -63,9 +61,7 @@ public class SaveData {
             root.add("notes", GSON.toJsonTree(notes));
 
             JsonArray taskArr = new JsonArray();
-            for (Task task : tasks) {
-                taskArr.add(TaskJson.write(task));
-            }
+            for (Task task : tasks) taskArr.add(TaskJson.write(task));
             root.add("tasks", taskArr);
 
             try (Writer w = Files.newBufferedWriter(SAVE_FILE, StandardCharsets.UTF_8)) {
@@ -81,25 +77,37 @@ public class SaveData {
 
         static JsonObject write(Task task) {
             JsonObject obj = new JsonObject();
-            obj.addProperty("id", task.id);
-            obj.addProperty("name", task.name);
+            obj.addProperty("id",        task.id);
+            obj.addProperty("name",      task.name);
             obj.addProperty("completed", task.completed);
-            obj.addProperty("type", task.type);
-            obj.addProperty("pinned", task.pinned);
+            obj.addProperty("type",      task.type);
+            obj.addProperty("pinned",    task.pinned);
+            obj.addProperty("priority",  task.priority);
+
+            // Subtasks
+            JsonArray stArr = new JsonArray();
+            if (task.subtasks != null) {
+                for (Subtask st : task.subtasks) {
+                    JsonObject stObj = new JsonObject();
+                    stObj.addProperty("id",        st.id);
+                    stObj.addProperty("name",      st.name);
+                    stObj.addProperty("completed", st.completed);
+                    stArr.add(stObj);
+                }
+            }
+            obj.add("subtasks", stArr);
 
             if (task instanceof ItemTask it) {
-                obj.addProperty("itemId", it.itemId);
-                obj.addProperty("target", it.target);
-                obj.addProperty("current", it.current);
+                obj.addProperty("itemId",       it.itemId);
+                obj.addProperty("target",       it.target);
+                obj.addProperty("current",      it.current);
                 obj.addProperty("countStorage", it.countStorage);
             }
             return obj;
         }
 
         static Task read(JsonObject obj) throws JsonParseException {
-            if (!obj.has("type")) {
-                throw new JsonParseException("Task JSON missing 'type'");
-            }
+            if (!obj.has("type")) throw new JsonParseException("Task JSON missing 'type'");
             return switch (obj.get("type").getAsString()) {
                 case "item"   -> readItem(obj);
                 case "manual" -> readManual(obj);
@@ -111,10 +119,10 @@ public class SaveData {
         private static ItemTask readItem(JsonObject obj) {
             ItemTask task = new ItemTask();
             readBase(obj, task);
-            task.type = "item";
-            task.itemId = obj.get("itemId").getAsString();
-            task.target = obj.get("target").getAsInt();
-            task.current = obj.has("current") ? obj.get("current").getAsInt() : 0;
+            task.type         = "item";
+            task.itemId       = obj.get("itemId").getAsString();
+            task.target       = obj.get("target").getAsInt();
+            task.current      = obj.has("current")      ? obj.get("current").getAsInt()          : 0;
             task.countStorage = !obj.has("countStorage") || obj.get("countStorage").getAsBoolean();
             return task;
         }
@@ -127,10 +135,27 @@ public class SaveData {
         }
 
         private static void readBase(JsonObject obj, Task task) {
-            task.id = obj.get("id").getAsString();
-            task.name = obj.get("name").getAsString();
+            task.id        = obj.get("id").getAsString();
+            task.name      = obj.get("name").getAsString();
             task.completed = obj.get("completed").getAsBoolean();
-            task.pinned = obj.has("pinned") && obj.get("pinned").getAsBoolean();
+            task.pinned    = obj.has("pinned")   && obj.get("pinned").getAsBoolean();
+            // priority defaults to NORMAL for older saves that lack the field
+            task.priority  = obj.has("priority") ? obj.get("priority").getAsInt()
+                    : Task.PRIORITY_NORMAL;
+
+            // Subtasks — gracefully missing in older saves
+            task.subtasks = new ArrayList<>();
+            if (obj.has("subtasks") && obj.get("subtasks").isJsonArray()) {
+                for (JsonElement el : obj.getAsJsonArray("subtasks")) {
+                    JsonObject stObj = el.getAsJsonObject();
+                    Subtask st  = new Subtask();
+                    st.id        = stObj.has("id") ? stObj.get("id").getAsString()
+                            : UUID.randomUUID().toString();
+                    st.name      = stObj.get("name").getAsString();
+                    st.completed = stObj.has("completed") && stObj.get("completed").getAsBoolean();
+                    task.subtasks.add(st);
+                }
+            }
         }
     }
 }
